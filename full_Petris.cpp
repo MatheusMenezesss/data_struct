@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <cstring>
 
 using namespace std;
 
@@ -155,7 +156,8 @@ class Queue{
                     rock* aux = e->column.pop();
                     delete aux;
                     if(e->column.stackempty()){
-
+                        delete e;
+                        number_columns--;
                     }
                 }else{
                     e->column.push(arg);
@@ -206,22 +208,45 @@ rock *petris::pop(){
     return nullptr;
 }
 
+int tratar_erro(char caracter[]){
+    int i  = 0;
+    int output = 0;
+    while (caracter[i] != '\0')
+    {
+        if(i > 0){
+            output = output*10;
+            output = output + (int(caracter[i]) - 48);
+        }else{
+            output = (int(caracter[i]) - 48);
+        }
+        i++;
+    }
+    return output;
+}
+
 void match(){
     string caracter = " ";
     petris *col = nullptr;
     Queue full_columns; 
     int index;
     rock* curs;
+    string aux; 
     while (caracter != "END")
     {
-        cin>>index>>caracter; //index tá pegando o END
+        cin>>aux;
+        if(aux == "END"){
+            break;
+        }else{
+            index = tratar_erro(&aux[0]);
+        }
+        cin>>caracter; //index tá pegando o END
         if(caracter != "END"){
             char *aux = &caracter[0];
             full_columns.Enqueue(aux, index);
-            full_columns.END();
+            //full_columns.END();
         }
     }
-    full_columns.END();
     cout<<"caso "<<i<<": ";
+    full_columns.END();
     cout<<endl;
 }
