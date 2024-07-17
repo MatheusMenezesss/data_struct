@@ -53,12 +53,12 @@ class queue{
             size = 0;
         }
         ~queue(){
-            node* e;
+            node* e = head;
             while (e)
             {
-                e = head;
                 head = head->next;
                 delete e;
+                e = head;
             }
             
         }
@@ -108,7 +108,10 @@ class Cuscuz : public stack{
             node* curs = head;
             while (curs)
             {
-                cout<<curs->value<<curs->nipe<<" ";
+                cout<<curs->value<<curs->nipe;
+                if(curs->next){
+                    cout<<" ";
+                }
                 curs = curs->next;
             }
         }
@@ -182,20 +185,22 @@ int main(){
             match.END();
             card_win winer;
             int value; char nipe;
+            node* assistent;
             for(int i = 0; i < number_players; i++){
-                node* assistent = players[i].Dequeue();
+                assistent = players[i].Dequeue();
                 value = assistent->value;
                 nipe = assistent->nipe;
+                delete assistent;
                 winer.compared(value, nipe, i);
                 match.RND(value, nipe);
-            }
+            }    
             cout<<count<<" "<<winer.win_player<<endl;
             //match.printa_stack();
             count++;
 
         }else if(!strcmp(operation, "PRT")){
             match.PRT();
-            cout<<endl;;
+            cout<<endl;
             match.END();
 
         }  else{
