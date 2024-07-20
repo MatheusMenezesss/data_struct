@@ -1,9 +1,6 @@
-/*
-    obs: algum loop infinito
-    debugar
-*/
 #include <iostream>
 #include <string>
+#include <cstring>
 
 using namespace std;
 
@@ -13,110 +10,150 @@ struct rock{
 };
 
 class petris{
-    private:
-       rock *head;
-       int num_element;
-    public:
+public:
+    rock *head;
+    int num_element;
     petris(){
         head = nullptr;
         num_element = 0;
     }
-    bool stackempty(){if(head) return false; else return true;}
+    ~petris(){
+        rock* e = head;
+        while (head)
+        {
+            head = head->next;
+            delete e;
+            e = head;
+        }
+    }
+    bool stackempty(){return head == nullptr;}
 
     void push(char args[]);
     rock *pop();
     bool equal_elements(char value[]){
         if(stackempty()) return false;
-        if(value == head->value) return true;
-        else return false;
+        return head->value == value;
     }
-    void end_game(){
-        cout<<num_element<<" ";
-        if(head){
-            cout<<head->value;
-        }else cout<<"-1";
-        rock *assistant;
-        while (head)
+};
+
+struct node{
+    petris column;
+    node* next;
+    node* previus;
+};
+
+class Queue{
+private:
+    node* head;
+    node* tail;
+    int number_columns;
+public:
+    Queue(){
+        head = nullptr;
+        tail = head;
+        number_columns = 0;
+    }
+    ~Queue(){
+        node* e = head;
+        while (e)
         {
-            assistant = pop();
-            delete assistant;
+            head = head->next;
+            delete e;
+            e = head;
         }
-        num_element = 0;
     }
 
-    void verifica_stack(){
-        rock* assitant = head;
-        cout<<"num de elementos atual: "<< num_element<<"lita atual:"<<endl;
-        if(assitant) cout<<"LISTA Vazia!!"<<endl;
-        while (assitant){
-            cout<<assitant->value<<endl;
-            assitant = assitant->next;
+    void END(){
+        node* e = head;
+        while (e)
+        {
+            if(e) cout<<" ";
+            cout<<e->column.head->value;
+            e = e->next;
         }
-        cout<<"FINAL DA STACK"<<endl;
+        cout<<endl;
     }
-};
-class full_petris{
-    private:
-        petris** columns;
-        int full_columns_number;
-    public:
-        void add_column_Right(){
-            petris* new_columns = new petris[++full_columns_number];
-            for(int i = 0; i < (full_columns_number - 1); i++){
-                new_columns[i] = *columns[i];
-            }
-            *columns = new_columns;
+    void mostrar_colunas(){
+        node* e = head;
+        while (e)
+        {
+            e = e->next;
         }
-        void add_column_Left(){
-            petris* new_columns = new petris[++full_columns_number];
-            for(int i = 1; i < full_columns_number; i++){
-                new_columns[i] = *columns[i];
-            }
-            *columns = new_columns;
-        }
-        petris* remove_column(int index){
-            petris* new_columns = new petris[full_columns_number - 1];
-            petris* aux;
-            for(int i = 0; i < full_columns_number; i++){
-                if(i != index)
-                    new_columns[i] = *columns[i];
-                else aux = columns[i]; //obs:aux apontando para um ponteiro de ponteiro
-            }
-            *columns = new_columns;
-            return aux;
-        }
-        void add_rock(char *aux, int index){
-            rock* cur;
-            if(index == 0){
-                add_column_Left();
-                    columns[0]->push(aux);
-
-            }else if(index >= full_columns_number){
-                add_column_Right();
-                    columns[full_columns_number]->push(aux);
-
+    }
+    node* Dequeue(node* arg){
+        if(!head) return nullptr;
+        if(arg->previus) arg->previus->next = arg->next;
+        if(arg->next) arg->next->previus = arg->previus;
+        if(arg == head) head = arg->next;
+        if(arg == tail) tail = arg->previus;
+        arg->next = nullptr;
+        arg->previus = nullptr;
+        return arg;
+    }
+    void Enqueue(char* arg, int index){
+        if(index > number_columns){
+            if(!number_columns){
+                head = new node;
+                head->next = nullptr;
+                head->previus = nullptr;
+                head->column.push(arg);
+                tail = head;
             }else{
-                if(columns[index]->equal_elements(aux)){
-                    cur = columns[index]->pop();
-                    delete cur;
-                }else{
-                    columns[index]->push(aux);
+                node* new_element = new node;
+                new_element->next = nullptr;
+                new_element->previus = tail;
+                new_element->column.push(arg);
+                tail->next = new_element;
+                tail = new_element;
+            }
+            number_columns++;
+        }else if(index == 0){
+            if(!number_columns){
+                head = new node;
+                head->next = nullptr;
+                head->previus = nullptr;
+                head->column.push(arg);
+                tail = head;
+            }else{
+                node* new_element = new node;
+                new_element->next = head;
+                new_element->previus = nullptr;
+                new_element->column.push(arg);
+                head->previus = new_element;
+                head = new_element;
+            }
+            number_columns++;
+        }else{
+            node* e = head;
+            for(int i = 1; i < index; i++){
+                e = e->next;
+            }
+            if(e->column.equal_elements(arg)){
+                rock* aux = e->column.pop();
+                delete aux;
+                if(e->column.stackempty()){
+                    if(e == head){
+                        head = head->next;
+                    }else{
+                        e = Dequeue(e);
+                    }
+                    delete e;
+                    number_columns--;
                 }
+            }else{
+                e->column.push(arg);
             }
         }
-        full_petris(){
-            columns = nullptr;
-            full_columns_number = 0;
-        }
+    }
 };
-void match(petris *arg);
+
+void match();
 int i;
 int main(){
     int num_matches = 0;
     cin>>num_matches;
-    petris commence;
     for(i = 0; i < num_matches; i++){
-        match(&commence);
+        match();
     }
     return 0;
 }
@@ -132,8 +169,6 @@ void petris::push(char args[]){
         head = nw_elemen;
     }
     num_element++;
-    //cout<<"adiciona elemento:"<<endl;
-    //verifica_stack();
 }
 
 rock *petris::pop(){
@@ -141,29 +176,47 @@ rock *petris::pop(){
         rock *remove = head;
         head = head->next;
         num_element--;
-        //cout<<"exclui elemento:"<<endl;
-        //verifica_stack();
         return remove;
     }
-
     return nullptr;
 }
 
-void match(petris *arg){
+int tratar_erro(char caracter[]){
+    int i  = 0;
+    int output = 0;
+    while (caracter[i] != '\0')
+    {
+        if(i > 0){
+            output = output*10;
+            output = output + (int(caracter[i]) - 48);
+        }else{
+            output = (int(caracter[i]) - 48);
+        }
+        i++;
+    }
+    return output;
+}
+
+void match(){
     string caracter = " ";
     petris *col = nullptr;
-    full_petris full_columns; 
-    int index, index_number;
-    rock* curs;
+    Queue full_columns;
+    int index;
+    string aux;
     while (caracter != "END")
     {
-        cin>>index>>caracter;
+        cin>>aux;
+        if(aux == "END"){
+            break;
+        }else{
+            index = tratar_erro(&aux[0]);
+        }
+        cin>>caracter;
         if(caracter != "END"){
             char *aux = &caracter[0];
-            full_columns.add_rock(aux, index);
+            full_columns.Enqueue(aux, index);
         }
     }
-    cout<<"caso "<<i<<": ";
-    arg->end_game();
-    cout<<endl;
+    cout<<"caso "<<i<<":";
+    full_columns.END();
 }
