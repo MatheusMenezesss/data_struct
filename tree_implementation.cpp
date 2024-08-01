@@ -11,11 +11,12 @@ struct node{
 class tree{
     private:
         node* root;
-    protected:
-
     public:
         tree(){
             root = nullptr;
+        }
+        node* root_return(){
+            return root;
         }
         void tree_insert(node* node_insert){
             node* node_aux = nullptr; //elemento de referência para o ultimo node valido 
@@ -46,13 +47,13 @@ class tree{
         }
         node* tree_Minimum(node* root_current){
             node* curs = root_current;
-            while (curs)
+            while (curs && curs->left_son)
                 curs = curs->left_son;
             return curs;
             
         }
         node* tree_Maximum(node* root_current){
-            node* curs = root_current;
+            node* curs = root_current; 
             while (curs)
             {
                 curs = curs->rigth_son;
@@ -63,10 +64,74 @@ class tree{
             if(root_current->rigth_son)
                 return tree_Minimum(root_current);
         }
+        void transplant(node* u, node* v){
+            if(!u->father){
+                root = v;
+            }else if(u == u->father->left_son){
+                u->father->left_son = v;
+            }else{
+                u->father->rigth_son = v;
+            }
+            if(!v){
+                v->father = u->father;
+            }
+        }
+
+        node* remove(node* e){
+            if(!e) return nullptr;
+            if(!e->left_son){ 
+                transplant(e, e->rigth_son);
+            }else if(!e->rigth_son){
+                 transplant(e, e->rigth_son);
+            }else{
+                node* aux = tree_Minimum(e->rigth_son);
+                if (aux->father != e){
+                    transplant(aux, aux->rigth_son);
+                    aux->rigth_son = e->rigth_son;
+                    aux->rigth_son->father = aux; 
+                }
+                transplant(e, aux);
+                aux->rigth_son = e->rigth_son;
+                aux->left_son->father = aux;
+            }
+            delete e;
+        }
+        void printa_arvore_EmOrdem(node* init){
+            node* e = init;
+            if(!init){
+                cout<<"Nada"<<endl;
+            }
+            if(init->left_son) printa_arvore_EmOrdem(init->left_son);
+            cout<<init->value<<" ";
+            if(init->rigth_son) printa_arvore_EmOrdem(init->rigth_son);
+        }
 
 };
 int main(){
-
-
+    tree my_tree;
+    int aux = 0;
+    cin>>aux;
+    for(aux; aux > 0; aux--){
+        node* new_element= new node;
+        int x;
+        cout<<"Qual o valor do elemento? : ";
+        cin>>x;
+        new_element->value = x;
+        new_element->father = nullptr;
+        new_element->left_son = nullptr;
+        new_element->rigth_son = nullptr;
+        my_tree.tree_insert(new_element);
+    }
+    cout<<endl;
+    my_tree.printa_arvore_EmOrdem(my_tree.root_return());
+    cout<<endl;
+    node *e = my_tree.tree_search(60, my_tree.root_return());
+    if(!e) cout<<"elemento n existe";
+    else{
+        cout<<"Elemento: "<<e->value<<endl;
+        my_tree.remove(e);
+    }
+    my_tree.printa_arvore_EmOrdem(my_tree.root_return());
+    cout<<endl;
     return 0;
 }
